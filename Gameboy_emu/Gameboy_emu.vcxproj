@@ -131,9 +131,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="arithmetic.c" />
+    <ClCompile Include="con_trans_instr.c" />
     <ClCompile Include="cpu.c" />
+    <ClCompile Include="cpu_instr_dec.h" />
     <ClCompile Include="emulator.c" />
     <ClCompile Include="instructions.c" />
+    <ClCompile Include="load_instr.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="handle_files.c" />
     <ClCompile Include="memory.c" />
@@ -144,15 +148,23 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="arithmetic.h" />
+    <ClInclude Include="con_trans_instr.h" />
     <ClInclude Include="cpu.h" />
     <ClInclude Include="emulator.h" />
     <ClInclude Include="handle_files.h" />
     <ClInclude Include="instructions.h" />
+    <ClInclude Include="load_instr.h" />
     <ClInclude Include="memory.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="06-blargg.gb" />
+    <None Include="test.gb" />
     <None Include="tetris.gb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="log.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

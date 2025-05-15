@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\instrs">
+      <UniqueIdentifier>{b16ce717-1fb8-4c17-8840-8cc1c061f21e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\instrs">
+      <UniqueIdentifier>{c2b4285b-7ad9-4111-a27e-43ebb457bcd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.c">
@@ -32,6 +38,18 @@
     </ClCompile>
     <ClCompile Include="instructions.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cpu_instr_dec.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="load_instr.c">
+      <Filter>Source Files\instrs</Filter>
+    </ClCompile>
+    <ClCompile Include="arithmetic.c">
+      <Filter>Source Files\instrs</Filter>
+    </ClCompile>
+    <ClCompile Include="con_trans_instr.c">
+      <Filter>Source Files\instrs</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -53,10 +71,30 @@
     <ClInclude Include="instructions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="load_instr.h">
+      <Filter>Header Files\instrs</Filter>
+    </ClInclude>
+    <ClInclude Include="arithmetic.h">
+      <Filter>Header Files\instrs</Filter>
+    </ClInclude>
+    <ClInclude Include="con_trans_instr.h">
+      <Filter>Header Files\instrs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="tetris.gb">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="test.gb">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="06-blargg.gb">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="log.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>

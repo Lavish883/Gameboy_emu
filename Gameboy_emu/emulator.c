@@ -29,7 +29,6 @@ EMULATOR emulator_create(char* rom_name) {
 		pEmulator = NULL;
 		goto exit;
 	}
-
 	if (pEmulator != NULL) {
 		pEmulator->hCpu = cpu_create();
 		if (pEmulator->hCpu == NULL) {
@@ -43,6 +42,12 @@ EMULATOR emulator_create(char* rom_name) {
 			SDL_free(rom_bank); 
 			goto exit;
 		}
+		
+		
+		
+		
+		// CONNECT COMPONETS AFERT EVERYTHING HAS BEEN ALLOCATED
+		cpu_connect_memory(pEmulator->hCpu, pEmulator->hMemory);
 	}
 
 	exit:
@@ -54,6 +59,10 @@ STATUS emulator_rom_set_up(char* rom_name, uint8_t** pRom){
 	*pRom = return_file_as_array(rom_name, &local_status);
 	SDL_Log("Catridge type: %d", (*pRom)[0x147]);
 	return local_status;
+}
+void emulator_run(EMULATOR hEmulator) {
+	Emulator* pEmulator = (Emulator*)hEmulator;
+	cpu_execute(pEmulator->hCpu);
 }
 
 void clean_up_emulator_on_fail(Emulator** pEmulator, int argc,  ...) {
