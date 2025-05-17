@@ -17,6 +17,7 @@ struct cpu {
 	uint8_t regL;
 	uint16_t regSP;
 	uint16_t regPC;
+	bool IME;
 	unsigned long t_cycles_count;
 	MEMORY hMemory;
 	FILE* fp;
@@ -44,6 +45,7 @@ CPU cpu_create(void) {
 	pCpu->regPC = 0x0100;
 	pCpu->hMemory = NULL;
 	pCpu->t_cycles_count = 0;
+	pCpu->IME = false;
 	FILE* fp = fopen("log.txt", "w");
 
 	if (fp == NULL) {
@@ -117,7 +119,7 @@ void set_bit(uint8_t* pNum, int n, int value) {
 
 uint16_t get_16_bit_reg_value(CPU hCpu, int reg_index) {
 	if (reg_index < 0 || reg_index > 5) {
-		SDL_Log("NOT A VALID 16 BIT REGISTER");
+		SDL_Log("NOT A VALID 16 BIT REGISTER asking for %d", reg_index);
 		return 0x0;
 	}
 	Cpu* pCpu = (Cpu*)hCpu;
@@ -157,7 +159,7 @@ uint8_t* get_8_bit_reg_addr(CPU hCpu, int reg_indx) {
 		case(3): return &(pCpu->regE);
 		case(4): return &(pCpu->regH);
 		case(5): return &(pCpu->regL);
-		case(6): return memory_read_get_pointer(pCpu->hMemory, get_16_bit_reg_value(hCpu, 3));
+		case(6): return memory_read_get_pointer(pCpu->hMemory, get_16_bit_reg_value(hCpu, 2));
 		case(7): return &(pCpu->regA);
 		default:
 			break;
@@ -169,6 +171,14 @@ uint8_t read_immediate_mem_for_instructions(CPU hCpu) {
 	Cpu* pCpu = (Cpu*)hCpu;
 	return memory_read(pCpu->hMemory, pCpu->regPC++);
 }
+uint16_t read_immediate16_mem_for_instructions(CPU hCpu) {
+	Cpu* pCpu = (Cpu*)hCpu;
+	uint8_t low_byte = memory_read(pCpu->hMemory, pCpu->regPC++);
+	uint8_t	high_byte = memory_read(pCpu->hMemory, pCpu->regPC++);
+
+	return (((uint16_t)high_byte) << 8) + low_byte;
+}
+
 uint8_t read_mem_for_instructions_at_addr(CPU hCpu, uint16_t addr) {
 	Cpu* pCpu = (Cpu*)hCpu;
 	return memory_read(pCpu->hMemory, addr);
@@ -205,13 +215,21 @@ bool get_flag(CPU hCpu, char flag) {
 	Cpu* pCpu = (Cpu*)hCpu;
 	flag = toupper(flag);
 	switch (flag) {
-		case('Z'): return pCpu->regF >> 7;
-		case('N'): return pCpu->regF >> 6;
-		case('H'): return pCpu->regF >> 5;
-		case('C'): return pCpu->regF >> 4;
+		case('Z'): return (pCpu->regF >> 7) & 0x1;
+		case('N'): return (pCpu->regF >> 6) & 0x1;
+		case('H'): return (pCpu->regF >> 5) & 0x1;
+		case('C'): return (pCpu->regF >> 4) & 0x1;
 		default: break;
 	}
 	return false;
+}
+void disable_interrupt_master(CPU hCpu) {
+	Cpu* pCpu = (Cpu*)hCpu;
+	pCpu->IME = false;
+}
+void enable_interrupt_master(CPU hCpu) {
+	Cpu* pCpu = (Cpu*)hCpu;
+	pCpu->IME = true;
 }
 
 
@@ -236,8 +254,12 @@ void cpu_execute(CPU hCpu) {
 		memory_read(pCpu->hMemory, pCpu->regPC + 2),
 		memory_read(pCpu->hMemory, pCpu->regPC + 3)
 		);
+	if (pCpu->regPC == 0xC678) {
+		printf("here");
+	}
 	uint8_t opcode = memory_read(pCpu->hMemory, pCpu->regPC++);
 	int exectued = 0;
+	
 	opcode_deconstructor_and_run(hCpu, opcode, name, 30, &(pCpu->t_cycles_count), &exectued);
 	if (exectued == 0) {
 		SDL_Log("%.2x means %s", opcode, name);

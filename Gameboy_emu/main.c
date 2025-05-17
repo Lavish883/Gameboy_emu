@@ -13,12 +13,16 @@ int main(int argc, char* argv[]) {
     // SET UP EMULATOR
     EMULATOR hEmulator = NULL;
     hEmulator = emulator_create("06-blargg.gb");
+    //hEmulator = emulator_create("test.gb");
     if (hEmulator == NULL) {
         SDL_Log("EMULATOR WAS NOT ABLE TO BE MADE");
         return 1;
     }
-    for (int i = 0; i < 16443; i++) {
+    //587_416
+    for (int i = 0; i < 241011; i++) {
+        //SDL_Log("I %d: ", i);
         emulator_run(hEmulator);
+        // 224
     }
     /*
     // SDL SETUP

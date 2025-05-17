@@ -12,10 +12,13 @@ uint16_t get_16_bit_reg_value(CPU hCpu, int reg_index);
 void set_16_bit_reg_value(CPU hCpu, int reg_index, uint16_t value);
 void set_flag(CPU hCpu, char flag, int value);
 bool get_flag(CPU hCpu, char flag);
-void disable_interrupts();
+void disable_interrupt_master(CPU hCpu);
+void enable_interrupt_master(CPU hCpu);
 
 // Gives the value immediate to the position where the cpu is (PC)
 uint8_t read_immediate_mem_for_instructions(CPU hCpu);
 // Returns the value at the given addr in the memory
 uint8_t read_mem_for_instructions_at_addr(CPU hCpu, uint16_t addr);
 void set_mem_for_instructions_at_addr(CPU hCpu, uint16_t addr, uint8_t value);
+
+uint16_t read_immediate16_mem_for_instructions(CPU hCpu);
