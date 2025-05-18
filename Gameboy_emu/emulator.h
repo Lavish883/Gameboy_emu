@@ -11,3 +11,4 @@ typedef void* EMULATOR;
 EMULATOR emulator_create(char* rom_name);
 void emulator_run(EMULATOR hEmulator);
 void emulator_destroy(EMULATOR* phEmulator);
+void emulator_check_if_test_passed(EMULATOR hEmulator);

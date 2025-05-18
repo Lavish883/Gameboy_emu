@@ -5,6 +5,8 @@
 
 #define reg_A 7
 #define reg_AT_HL 6
+#define reg_SP 3
+#define reg_HL 2
 
 
 //char* r8_table[8] = { "B","C","D","E","H","L","[HL]", "A" };
@@ -56,7 +58,6 @@ void load_8bit_data_to_immediate16_addr_from_A(CPU hCpu, long* pT_cycles_count) 
 void load_8bit_data_to_A_from_immediate16_addr(CPU hCpu, long* pT_cycles_count) {
 	uint16_t addr = read_immediate16_mem_for_instructions(hCpu);
 	uint8_t* pReg = get_8_bit_reg_addr(hCpu, reg_A);
-	printf("ADDR IS %.4X\n", addr);
 
 	*pReg = read_mem_for_instructions_at_addr(hCpu, addr);
 	*pT_cycles_count += 16;
@@ -111,10 +112,10 @@ void ldh_8bit_data_from_immediate_to_A(CPU hCpu, long* pT_cycles_count) {
 // stores the sp at the address speficied by immdeiate 16
 void load_SP_to_immediate16(CPU hCpu, long* pT_cycles_count) {
 	uint16_t addr = read_immediate16_mem_for_instructions(hCpu);
-	uint16_t reg_SP = get_16_bit_reg_value(hCpu, 3);
+	uint16_t SP = get_16_bit_reg_value(hCpu, reg_SP);
 
-	uint8_t low_byte = (uint8_t)reg_SP;
-	uint8_t high_byte = (uint8_t)(reg_SP >> 8);
+	uint8_t low_byte = (uint8_t)SP;
+	uint8_t high_byte = (uint8_t)(SP >> 8);
 
 	set_mem_for_instructions_at_addr(hCpu, addr, low_byte);
 	set_mem_for_instructions_at_addr(hCpu, addr + 1, high_byte);
@@ -124,6 +125,42 @@ void load_SP_to_immediate16(CPU hCpu, long* pT_cycles_count) {
 
 // LD SP,HL sets SP to HL
 void load_SP_from_HL(CPU hCpu, long* pT_cycles_count) {
-	set_16_bit_reg_value(hCpu, 3, get_16_bit_reg_value(hCpu, 4));
+	set_16_bit_reg_value(hCpu, reg_SP, get_16_bit_reg_value(hCpu, reg_HL));
+	*pT_cycles_count += 8;
+}
+
+// LD HL, SP + e8 sets HL to SP + signed 8 bit value
+void load_HL_from_SP_and_immediate_signed_8bit(CPU hCpu, long* pT_cycles_count) {
+	int8_t e8 = (int8_t)read_immediate_mem_for_instructions(hCpu);
+	uint16_t SP = get_16_bit_reg_value(hCpu, reg_SP);
+
+	// Lower byte calculation (for flag logic)
+	uint8_t low_sp = SP & 0xFF;
+	uint8_t low_e8 = (uint8_t)e8;
+
+	set_16_bit_reg_value(hCpu, reg_HL, e8 + SP);
+
+	// Set flagse
+	set_flag(hCpu, 'Z', 0);
+	set_flag(hCpu, 'N', 0);
+	set_flag(hCpu, 'H', ((low_sp & 0xF) + (low_e8 & 0xF)) > 0xF);
+	set_flag(hCpu, 'C', (low_sp + low_e8) > 0xFF);
+
+	*pT_cycles_count += 12;
+}
+
+void load_A_from_addr_of_C_from_internal_ram(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg_a = get_8_bit_reg_addr(hCpu, reg_A);
+	uint8_t* pReg_c = get_8_bit_reg_addr(hCpu, 1);
+
+	*pReg_a = read_mem_for_instructions_at_addr(hCpu, *pReg_c + 0xFF00);
+	*pT_cycles_count += 8;
+}
+
+void load_A_to_addr_of_C_to_internal_ram(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg_a = get_8_bit_reg_addr(hCpu, reg_A);
+	uint8_t* pReg_c = get_8_bit_reg_addr(hCpu, 1);
+
+	set_mem_for_instructions_at_addr(hCpu, *pReg_c + 0xFF00, *pReg_a);
 	*pT_cycles_count += 8;
 }

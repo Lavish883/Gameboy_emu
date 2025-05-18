@@ -14,6 +14,8 @@ void set_flag(CPU hCpu, char flag, int value);
 bool get_flag(CPU hCpu, char flag);
 void disable_interrupt_master(CPU hCpu);
 void enable_interrupt_master(CPU hCpu);
+int get_bit(uint8_t num, int bit);
+void halt_instr(CPU hCpu);
 
 // Gives the value immediate to the position where the cpu is (PC)
 uint8_t read_immediate_mem_for_instructions(CPU hCpu);

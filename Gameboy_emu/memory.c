@@ -2,6 +2,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_stdinc.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 #define KB_4 4096
 #define KB_8 8192
@@ -70,9 +71,6 @@ uint8_t memory_read(MEMORY hMemory, uint16_t addr) {
 }
 void memory_set(MEMORY hMemory, uint16_t addr, uint8_t value) {
 	Memory* pMemory = (Memory*)hMemory;
-	if (addr == 0xDF7E) {
-		SDL_Log("SET TO %d", value);
-	}
 	if (addr >= 0x0 && addr <= 0x7FFF) {
 		pMemory->rom_bank[addr] = value;
 	}
@@ -132,4 +130,15 @@ void memory_destroy(MEMORY* phMemory) {
 	SDL_free(pMemory->rom_bank);
 	SDL_free(pMemory);
 	*phMemory = NULL;
+}
+
+// Called when 0xFF02 is written with 0x81
+void handle_serial_transfer(MEMORY hMemory) {
+	Memory* pMemory = (Memory*)hMemory;
+	if (memory_read(pMemory, 0xFF02) == 0x81) {
+		char out = memory_read(pMemory, 0xFF01);
+		printf("%c", out);  // or buffer it
+		// Mark transfer as done
+		memory_set(pMemory, 0xFF02, 0x00);
+	}
 }

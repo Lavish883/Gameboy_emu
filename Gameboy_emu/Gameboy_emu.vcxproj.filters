@@ -109,6 +109,27 @@
     <None Include="07-blargg.gb">
       <Filter>Resource Files\tests</Filter>
     </None>
+    <None Include="03-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
+    <None Include="08-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
+    <None Include="09-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
+    <None Include="10-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
+    <None Include="11-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
+    <None Include="01-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
+    <None Include="02-blargg.gb">
+      <Filter>Resource Files\tests</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="log.txt">

@@ -30,12 +30,12 @@ opcode_group2_fp opcode_group2_all_fp[8] = {
 
 char* opcode_group_3_table[8] = { "RLC","RRC","RL", "RR", "SLA","SRA","SWAP","SRL" };
 opcode_group3_fp opcode_group3_all_fp[8] = {
-	NULL,
-	NULL,
-	NULL,
+	&RLC_r8,
+	&RRC_r8,
+	&RL_r8,
 	&RR_r8,
-	NULL,
-	NULL,
+	&SLA_r8,
+	&SRA_r8,
 	&SWAP_r8,
 	&SRL_r8,
 };
@@ -61,6 +61,21 @@ char* opcode_deconstructor_and_run(CPU hCpu, uint8_t opcode, char* name, int nam
 			return strncpy(name, "LD [a16], SP", name_length);
 		}
 		case 0x10: return strncpy(name, "STOP n8", name_length);  
+		case 0x07: {
+			*exectued = 1;
+			RLCA(hCpu, pT_cycles_count);
+			return strncpy(name, "RLCA", name_length);
+		}
+		case 0x0F: {
+			*exectued = 1;
+			RRCA(hCpu, pT_cycles_count);
+			return strncpy(name, "RRCA", name_length);
+		}
+		case 0x17: {
+			*exectued = 1;
+			RLA(hCpu, pT_cycles_count);
+			return strncpy(name, "RLA", name_length);
+		}
 		case 0x1F: {
 			*exectued = 1;
 			RRA(hCpu, pT_cycles_count);
@@ -71,26 +86,66 @@ char* opcode_deconstructor_and_run(CPU hCpu, uint8_t opcode, char* name, int nam
 			uncond_jump_immediate_signed8(hCpu, pT_cycles_count);
 			return strncpy(name, "JR e8", name_length);
 		}
-		case 0x76: return strncpy(name, "HALT", name_length);  
+		case 0x27: {
+			*exectued = 1;
+			DAA(hCpu, pT_cycles_count);
+			return strncpy(name, "DAA", name_length);
+		}
+		case 0x2F: {
+			*exectued = 1;
+			CPL(hCpu, pT_cycles_count);
+			return strncpy(name, "CPL", name_length);
+		}
+		case 0x37: {
+			*exectued = 1;
+			set_flag(hCpu, 'N', 0); set_flag(hCpu, 'H', 0); set_flag(hCpu, 'C', 1);
+			return strncpy(name, "SCF", name_length);
+		}
+		case 0x3F: {
+			*exectued = 1;
+			set_flag(hCpu, 'N', 0); set_flag(hCpu, 'H', 0); set_flag(hCpu, 'C', !get_flag(hCpu, 'C'));
+			return strncpy(name, "CCF", name_length);
+		}
+		case 0x76: {
+			*exectued = 1;
+			halt_instr(hCpu);
+			return strncpy(name, "HALT", name_length);
+		}
 		case 0xE0: {
 			*exectued = 1;
 			ldh_8bit_data_to_immediate8_from_A(hCpu, pT_cycles_count);
 			return strncpy(name, "LDH [a8], A", name_length);
 		}
-		case 0xE8: return strncpy(name, "ADD SP, e8", name_length);  
+		case 0xE8: {
+			*exectued = 1;
+			add_signed_immediate_8_to_SP(hCpu, pT_cycles_count);
+			return strncpy(name, "ADD SP, e8", name_length);
+		}
 		case 0xF0: { 
 			*exectued = 1;
 			ldh_8bit_data_from_immediate_to_A(hCpu, pT_cycles_count);
 			return strncpy(name, "LDH A, [a8]", name_length); 
 		}
-		case 0xF8: return strncpy(name, "LD HL, SP + e8", name_length);  
-		case 0xE2: return strncpy(name, "LDH [C], A", name_length);  
+		case 0xF8: {
+			*exectued = 1;
+			load_HL_from_SP_and_immediate_signed_8bit(hCpu, pT_cycles_count);
+			return strncpy(name, "LD HL, SP + e8", name_length);
+		}
+		case 0xE2: {
+			*exectued = 1;
+			load_A_to_addr_of_C_to_internal_ram(hCpu, pT_cycles_count);
+			return strncpy(name, "LDH [C], A", name_length);
+		}
 		case 0xEA: { 
 			*exectued = 1;
 			load_8bit_data_to_immediate16_addr_from_A(hCpu, pT_cycles_count);
 			return strncpy(name, "LD [a16], A", name_length);
 		}
-		case 0xF2: return strncpy(name, "LDH A, [C]", name_length);  
+		case 0xF2: {
+			*exectued = 1;
+			load_A_from_addr_of_C_from_internal_ram(hCpu, pT_cycles_count);
+			return strncpy(name, "LDH A, [C]", name_length);
+		}
 		case 0xFA: {
 			*exectued = 1;
 			load_8bit_data_to_A_from_immediate16_addr(hCpu, pT_cycles_count);
@@ -365,14 +420,20 @@ char* opcode_cb_deconstructor(CPU hCpu, uint8_t opcode, char* name, int name_len
 			break;
 		}
 		case(0x01): {
+			*exectued = 1;
+			COPY_CPL_BIT_TO_Z_r8(hCpu, input_1, input_2, pT_cycles_count);
 			sprintf_s(name, sizeof(char) * name_length, "BIT %d, %s", input_1, r8_table[input_2]);
 			break;
 		}
 		case(0x02): {
+			*exectued = 1;
+			RES_BIT_r8(hCpu, input_1, input_2, pT_cycles_count);
 			sprintf_s(name, sizeof(char) * name_length, "RES %d, %s", input_1, r8_table[input_2]);
 			break;
 		}
 		case(0x03): {
+			*exectued = 1;
+			SET_BIT_r8(hCpu, input_1, input_2, pT_cycles_count);
 			sprintf_s(name, sizeof(char) * name_length, "SET %d, %s", input_1, r8_table[input_2]);
 			break;
 		}

@@ -1,4 +1,4 @@
-#include "load_instr.h"
+#include "con_trans_instr.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -81,12 +81,13 @@ void uncond_call(CPU hCpu, long* pT_cycles_count) {
 	
 	uint8_t high_byte = (uint8_t)(reg_PC_value >> 8);
 	uint8_t low_byte = (uint8_t)(reg_PC_value);
+	uint16_t sp = get_16_bit_reg_value(hCpu, reg_SP);
 
 	// PUSH PC to stack
-	set_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP), high_byte);
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) - 1)); // decrement SP
-	set_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP), low_byte);
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) - 1)); // decrement SP
+	set_mem_for_instructions_at_addr(hCpu, sp - 1, high_byte);
+	set_mem_for_instructions_at_addr(hCpu, sp - 2, low_byte);
+
+	set_16_bit_reg_value(hCpu, reg_SP, sp - 2); // decrement SP
 
 	*pT_cycles_count += 8;
 
@@ -117,18 +118,7 @@ void cond_call(CPU hCpu, int cond_indx, long* pT_cycles_count) {
 
 // Pops regPC from the stack  
 void uncond_return(CPU hCpu, long* pT_cycles_count) {
-	// POP PC from stack
-	// + 1 to increment the stack stack implemented sideways (lower value addr means put more first)
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) + 1)); // increment SP
-	uint8_t low_byte = read_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP));
-	
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) + 1)); // increment SP
-	uint8_t high_byte = read_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP));
-
-	uint16_t addr = (((uint16_t)high_byte) << 8) + low_byte;
-	set_16_bit_reg_value(hCpu, reg_PC, addr);
-
-	*pT_cycles_count += 16;
+	pop_from_stack(hCpu, reg_PC, pT_cycles_count);
 }
 
 void cond_return(CPU hCpu, int cond_indx, long* pT_cycles_count) {
@@ -161,15 +151,14 @@ void push_on_stack(CPU hCpu, int reg_indx, long* pT_cycles_count) {
 	uint8_t high_byte = (uint8_t)(reg_value >> 8);
 	uint8_t low_byte = (uint8_t)(reg_value);
 
-	if (reg_indx == 1) {
-		printf("%.4X %d %d\n", get_16_bit_reg_value(hCpu, reg_SP), high_byte, low_byte);
-	}
+	uint16_t sp = get_16_bit_reg_value(hCpu, reg_SP);
 
 	// PUSH r16 to stack
-	set_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP), high_byte);
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) - 1)); // decrement SP
-	set_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP), low_byte);
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) - 1)); // decrement SP
+	set_mem_for_instructions_at_addr(hCpu, sp - 1, high_byte);
+	set_mem_for_instructions_at_addr(hCpu, sp - 2, low_byte);
+
+
+	set_16_bit_reg_value(hCpu, reg_SP, sp - 2); // decrement SP
 
 	*pT_cycles_count += 16;
 }
@@ -178,16 +167,16 @@ void push_on_stack(CPU hCpu, int reg_indx, long* pT_cycles_count) {
 void pop_from_stack(CPU hCpu, int reg_indx, long* pT_cycles_count) {
 	reg_indx = reg_indx != 3 ? reg_indx : 5; // fix all and r16_3 diff
 
-	// POP r16 from stack
-	// + 1 to increment the stack stack implemented sideways (lower value addr means put more first)
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) + 1)); // increment SP
-	uint8_t low_byte = read_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP));
+	uint16_t sp = get_16_bit_reg_value(hCpu, reg_SP);
 
-	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) + 1)); // increment SP
-	uint8_t high_byte = read_mem_for_instructions_at_addr(hCpu, get_16_bit_reg_value(hCpu, reg_SP));
+	// POP r16 from stack
+	uint8_t low_byte = read_mem_for_instructions_at_addr(hCpu, sp);
+	uint8_t high_byte = read_mem_for_instructions_at_addr(hCpu, sp + 1);
 
 	uint16_t addr = (((uint16_t)high_byte) << 8) + low_byte;
+
 	set_16_bit_reg_value(hCpu, reg_indx, addr);
+	set_16_bit_reg_value(hCpu, reg_SP, (get_16_bit_reg_value(hCpu, reg_SP) + 2));
 
 	*pT_cycles_count += 16;
 }

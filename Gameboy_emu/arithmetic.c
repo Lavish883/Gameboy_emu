@@ -1,5 +1,6 @@
 #include "arithmetic.h"
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -244,6 +245,32 @@ void r8_SBC_r8(CPU hCpu, int reg_index, bool is_reg, long* pT_cycles_count) {
 	}
 }
 
+// ADD SP, e8
+void add_signed_immediate_8_to_SP(CPU hCpu, long* pT_cycles_count) {
+	int8_t e8 = (int8_t)read_immediate_mem_for_instructions(hCpu);
+	uint16_t sp_val = get_16_bit_reg_value(hCpu, 3);
+
+	// Set flags
+	set_flag(hCpu, 'Z', 0);
+	set_flag(hCpu, 'N', 0);
+	set_flag(hCpu, 'H', ((sp_val & 0xF) + (e8 & 0xF)) > 0xF);
+	set_flag(hCpu, 'C', ((sp_val & 0xFF) + (e8 & 0xFF)) > 0xFF);
+
+	set_16_bit_reg_value(hCpu, 3, sp_val + e8);
+	*pT_cycles_count += 16;
+}
+
+void CPL(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg_A = get_8_bit_reg_addr(hCpu, reg_A);
+	*pReg_A = ~(*pReg_A);
+	
+	// Set flags
+	set_flag(hCpu, 'N', 1);
+	set_flag(hCpu, 'H', 1);
+
+	*pT_cycles_count += 4;
+}
+
 // RRA
 void RRA(CPU hCpu, long* pT_cycles_count) {
 	uint8_t* pReg = get_8_bit_reg_addr(hCpu, reg_A);
@@ -256,6 +283,82 @@ void RRA(CPU hCpu, long* pT_cycles_count) {
 	set_flag(hCpu, 'N', 0);
 	set_flag(hCpu, 'H', 0);
 	set_flag(hCpu, 'C', old_value & 0x01);
+
+	*pT_cycles_count += 4;
+}
+
+// RLA
+void RLA(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg = get_8_bit_reg_addr(hCpu, reg_A);
+	uint8_t old_value = *pReg;
+
+	*pReg = (*pReg << 1) + get_flag(hCpu, 'C');
+
+	// Set flags
+	set_flag(hCpu, 'Z', 0);
+	set_flag(hCpu, 'N', 0);
+	set_flag(hCpu, 'H', 0);
+	set_flag(hCpu, 'C', (old_value & 0x80) >> 7);
+
+	*pT_cycles_count += 4;
+}
+
+// RRCA
+void RRCA(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg = get_8_bit_reg_addr(hCpu, reg_A);
+	uint8_t old_value = *pReg;
+
+	*pReg = (*pReg >> 1) | (*pReg << 7);
+
+	// Set flags
+	set_flag(hCpu, 'Z', 0);
+	set_flag(hCpu, 'N', 0);
+	set_flag(hCpu, 'H', 0);
+	set_flag(hCpu, 'C', old_value & 0x01);
+
+	*pT_cycles_count += 4;
+}
+// RLCA
+void RLCA(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg = get_8_bit_reg_addr(hCpu, reg_A);
+	uint8_t old_value = *pReg;
+
+	*pReg = (*pReg << 1) | (*pReg >> 7);
+
+	// Set flags
+	set_flag(hCpu, 'Z', 0);
+	set_flag(hCpu, 'N', 0);
+	set_flag(hCpu, 'H', 0);
+	set_flag(hCpu, 'C', (old_value & 0x80) >> 7);
+
+	*pT_cycles_count += 4;
+}
+
+// DAA
+void DAA(CPU hCpu, long* pT_cycles_count) {
+	uint8_t* pReg = get_8_bit_reg_addr(hCpu, reg_A);
+	uint8_t adjustment = 0;
+
+	bool n_flag = get_flag(hCpu, 'N');
+	bool h_flag = get_flag(hCpu, 'H');
+	bool c_flag = get_flag(hCpu, 'C');
+
+	if (n_flag == true) {
+		if (h_flag == true) adjustment += 0x06;
+		if (c_flag == true) adjustment += 0x60;
+		*pReg -= adjustment;
+	}
+	else {
+		if (h_flag == true || (*pReg & 0x0F) > 0x09) adjustment += 0x06;
+		if (c_flag == true || *pReg > 0x99) {
+			adjustment += 0x60;
+			set_flag(hCpu, 'C', 1);
+		}
+		*pReg += adjustment;
+	}
+
+	set_flag(hCpu, 'Z', *pReg == 0);
+	set_flag(hCpu, 'H', 0);
 
 	*pT_cycles_count += 4;
 }

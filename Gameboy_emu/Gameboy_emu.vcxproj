@@ -161,10 +161,17 @@
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="01-blargg.gb" />
+    <None Include="02-blargg.gb" />
+    <None Include="03-blargg.gb" />
     <None Include="04-blargg.gb" />
     <None Include="05-blargg.gb" />
     <None Include="06-blargg.gb" />
     <None Include="07-blargg.gb" />
+    <None Include="08-blargg.gb" />
+    <None Include="09-blargg.gb" />
+    <None Include="10-blargg.gb" />
+    <None Include="11-blargg.gb" />
     <None Include="test.gb" />
     <None Include="tetris.gb" />
   </ItemGroup>

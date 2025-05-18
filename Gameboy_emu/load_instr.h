@@ -17,3 +17,7 @@ void load_8bit_data_from_immediate8_to_reg(CPU hCpu, int reg_index, long* pT_cyc
 
 void load_SP_to_immediate16(CPU hCpu, long* pT_cycles_count);
 void load_SP_from_HL(CPU hCpu, long* pT_cycles_count);
+void load_HL_from_SP_and_immediate_signed_8bit(CPU hCpu, long* pT_cycles_count);
+
+void load_A_from_addr_of_C_from_internal_ram(CPU hCpu, long* pT_cycles_count);
+void load_A_to_addr_of_C_to_internal_ram(CPU hCpu, long* pT_cycles_count);

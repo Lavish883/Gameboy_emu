@@ -12,18 +12,19 @@
 int main(int argc, char* argv[]) {
     // SET UP EMULATOR
     EMULATOR hEmulator = NULL;
-    hEmulator = emulator_create("06-blargg.gb");
+    hEmulator = emulator_create("02-blargg.gb");
     //hEmulator = emulator_create("test.gb");
     if (hEmulator == NULL) {
         SDL_Log("EMULATOR WAS NOT ABLE TO BE MADE");
-        return 1;
+        return 1;       
     }
-    //587_416
-    for (int i = 0; i < 241011; i++) {
+    //
+    for (int i = 0; i < 161058; i++) {
         //SDL_Log("I %d: ", i);
         emulator_run(hEmulator);
         // 224
     }
+    //emulator_check_if_test_passed(hEmulator);;
     /*
     // SDL SETUP
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {

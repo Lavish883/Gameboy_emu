@@ -7,6 +7,7 @@
 void increment_r16(CPU hCpu, int reg_index, long* pT_cycles_count); 
 void decrement_r16(CPU hCpu, int reg_index, long* pT_cycles_count);
 void add_r16_to_HL(CPU hCpu, int reg_indx, long* pT_cycles_count);
+void add_signed_immediate_8_to_SP(CPU hCpu, long* pT_cycles_count);
 
 void increment_r8(CPU hCpu, int reg_index, long* pT_cycles_count);
 void decrement_r8(CPU hCpu, int reg_index, long* pT_cycles_count);
@@ -21,3 +22,8 @@ void r8_ADC_r8(CPU hCpu, int reg_index, bool is_reg, long* pT_cycles_count);
 void r8_SBC_r8(CPU hCpu, int reg_index, bool is_reg, long* pT_cycles_count);
 
 void RRA(CPU hCpu, long* pT_cycles_count);
+void RLA(CPU hCpu, long* pT_cycles_count);
+void RRCA(CPU hCpu, long* pT_cycles_count);
+void RLCA(CPU hCpu, long* pT_cycles_count);
+void CPL(CPU hCpu, long* pT_cycles_count);
+void DAA(CPU hCpu, long* pT_cycles_count);

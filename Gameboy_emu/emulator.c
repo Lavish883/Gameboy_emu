@@ -85,3 +85,11 @@ void emulator_destroy(EMULATOR* phEmulator) {
 	SDL_free(pEmulator);
 	*phEmulator = NULL;
 }
+
+void emulator_check_if_test_passed(EMULATOR hEmulator) {
+	Emulator* pEmulator = (Emulator*)hEmulator;
+	for (int i = 0; i < 16; i++) {
+		char c = memory_read(pEmulator->hMemory, 0xA000 + i);
+		SDL_Log("%c", c);
+	}
+}
