@@ -142,6 +142,8 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="handle_files.c" />
     <ClCompile Include="memory.c" />
+    <ClCompile Include="ppu.c" />
+    <ClCompile Include="types.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\..\..\..\SDL-release-3.2.12\VisualC\SDL\SDL.vcxproj">
@@ -158,6 +160,7 @@
     <ClInclude Include="instructions.h" />
     <ClInclude Include="load_instr.h" />
     <ClInclude Include="memory.h" />
+    <ClInclude Include="ppu.h" />
     <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>

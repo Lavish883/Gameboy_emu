@@ -342,12 +342,12 @@ void handle_clock(CPU hCpu) {
 	}
 }
 
-void cpu_execute(CPU hCpu) {
+void cpu_execute(CPU hCpu, int* pT_cycles_took) {
 	Cpu* pCpu = (Cpu*)hCpu;
 	char name[30];
 	//SDL_Log("Before\nA: %.2X B: %.2X, C: %.2x, D: %.2x E: %.2x, F: %.2x, H: %.2x, L: %.2x SP: %.4x\n", pCpu->regA, pCpu->regB, pCpu->regC, pCpu->regD, pCpu->regE, pCpu->regF, pCpu->regH, pCpu->regL, pCpu->regSP);
 	//SDL_Log("T cycles count %lu", pCpu->t_cycles_count);
-	//fprintf(pCpu->fp,"A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n",
+	//fprintf(stdout,"A:%.2X F:%.2X B:%.2X C:%.2X D:%.2X E:%.2X H:%.2X L:%.2X SP:%.4X PC:%.4X PCMEM:%.2X,%.2X,%.2X,%.2X\n",
 	//	pCpu->regA,
 	//	pCpu->regF,
 	//	pCpu->regB,
@@ -378,6 +378,8 @@ void cpu_execute(CPU hCpu) {
 		}
 		pCpu->div_cycles_count += pCpu->t_cycles_count - t_cycles_before;
 		pCpu->tima_cycles_count += pCpu->t_cycles_count - t_cycles_before;
+		// FOR PPU updates
+		*pT_cycles_took = pCpu->t_cycles_count - t_cycles_before;
 	}
 
 	//SDL_Log("After\nA: %.2x B: %.2x, C: %.2x, D: %.2x E: %.2x, F: %.2x, H: %.2x, L: %.2x SP: %.4x\n", pCpu->regA, pCpu->regB, pCpu->regC, pCpu->regD, pCpu->regE, pCpu->regF, pCpu->regH, pCpu->regL, pCpu->regSP);

@@ -57,6 +57,12 @@
     <ClCompile Include="cb_instr.c">
       <Filter>Source Files\instrs</Filter>
     </ClCompile>
+    <ClCompile Include="ppu.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="types.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="emulator.h">
@@ -88,6 +94,9 @@
     </ClInclude>
     <ClInclude Include="cb_instr.h">
       <Filter>Header Files\instrs</Filter>
+    </ClInclude>
+    <ClInclude Include="ppu.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

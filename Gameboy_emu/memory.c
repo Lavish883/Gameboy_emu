@@ -11,6 +11,7 @@ struct memory {
 	uint8_t* rom_bank;
 	uint8_t* wram;
 	uint8_t* vram;
+	uint8_t* oam;
 	uint8_t* external_ram;
 	uint8_t* io_registers_and_hram;
 };
@@ -43,6 +44,10 @@ MEMORY memory_create(uint8_t* rom_bank) {
 			clean_up_memory_on_fail(&pMemory, 3, pMemory->wram, pMemory->io_registers_and_hram, pMemory->external_ram);
 			goto exit;	
 		}
+		pMemory->oam = SDL_calloc(189, sizeof(uint8_t));
+		if (pMemory->oam == NULL) {
+			clean_up_memory_on_fail(&pMemory, 4, pMemory->wram, pMemory->io_registers_and_hram, pMemory->external_ram, pMemory->io_registers_and_hram);
+		}
 	}
 
 	exit:
@@ -50,7 +55,6 @@ MEMORY memory_create(uint8_t* rom_bank) {
 }
 uint8_t memory_read(MEMORY hMemory, uint16_t addr) {
 	Memory* pMemory = (Memory*)hMemory;
-	if (addr == 0xFF44) return 0x90;
 	if (addr >= 0x0 && addr <= 0x7FFF) {
 		return pMemory->rom_bank[addr];
 	}
@@ -66,13 +70,19 @@ uint8_t memory_read(MEMORY hMemory, uint16_t addr) {
 	else if (addr >= 0xFF00 && addr <= 0xFFFF) {
 		return pMemory->io_registers_and_hram[addr - 0xFF00];
 	}
+	else if (addr >= 0xFE00 && addr <= 0xFE9F) {
+		return pMemory->oam[addr - 0xFE00];
+	}
+	else if (addr >= 0xFEA0 && addr <= 0xFEFF) {
+		return 0x0;
+	}
 	SDL_Log("Not implnemented yet mem addr %.4X", addr);
 	return 0x0;
 }
 void memory_set(MEMORY hMemory, uint16_t addr, uint8_t value) {
 	Memory* pMemory = (Memory*)hMemory;
 	if (addr >= 0x0 && addr <= 0x7FFF) {
-		pMemory->rom_bank[addr] = value;
+		//pMemory->rom_bank[addr] = value;
 	}
 	else if (addr >= 0x8000 && addr <= 0x9FFF) {
 		pMemory->vram[addr - 0x8000] = value;
@@ -85,6 +95,13 @@ void memory_set(MEMORY hMemory, uint16_t addr, uint8_t value) {
 	}
 	else if (addr >= 0xFF00 && addr <= 0xFFFF) {
 		pMemory->io_registers_and_hram[addr - 0xFF00] = value;
+	}
+	
+	else if (addr >= 0xFE00 && addr <= 0xFE9F) {
+		pMemory->oam[addr - 0xFE00] = value;
+	}
+	else if (addr >= 0xFEA0 && addr <= 0xFEFF) {
+
 	}
 	else {
 		SDL_Log("Not implnemented yet mem addr %.4X", addr);
@@ -121,6 +138,12 @@ uint8_t* memory_read_get_pointer(MEMORY hMemory, uint16_t addr) {
 	}
 	else if (addr >= 0xFF00 && addr <= 0xFFFF) {
 		return &(pMemory->io_registers_and_hram[addr - 0xFF00]);
+	}
+	else if (addr >= 0xFE00 && addr <= 0xFE9F) {
+		return &(pMemory->oam[addr - 0xFE00]);
+	}
+	else if (addr >= 0xFEA0 && addr <= 0xFEFF) {
+		return NULL;
 	}
 	SDL_Log("Not implnemented yet mem %.4X", addr);
 	return NULL;

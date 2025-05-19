@@ -3,10 +3,15 @@
 #include <SDL3/SDL_stdinc.h>
 #include <stdarg.h>
 
+#define SCREEN_WIDTH 160
+#define SCREEN_HEIGHT 144
+
 struct emulator
 {
 	CPU hCpu;
 	MEMORY hMemory;
+	PPU hPPU;
+	uint32_t* frame_buffer;
 };
 
 typedef struct emulator Emulator;
@@ -21,6 +26,16 @@ EMULATOR emulator_create(char* rom_name) {
 	Emulator* pEmulator = (Emulator*)SDL_malloc(sizeof(Emulator));
 	// rom data
 	uint8_t* rom_bank = NULL;
+	uint32_t* frame_buffer = (uint32_t*)SDL_malloc(SCREEN_WIDTH * SCREEN_HEIGHT * sizeof(uint32_t));
+
+	if (frame_buffer == NULL) {
+		SDL_Log("Frame buffer wasn't able to be made");
+		SDL_free(pEmulator);
+		pEmulator = NULL;
+		goto exit;
+	}
+
+	pEmulator->frame_buffer = frame_buffer;
 
 	STATUS rom_bank_status = emulator_rom_set_up(rom_name, &rom_bank);
 	if (rom_bank_status == FAILURE) {
@@ -42,12 +57,17 @@ EMULATOR emulator_create(char* rom_name) {
 			SDL_free(rom_bank); 
 			goto exit;
 		}
-		
+		pEmulator->hPPU = ppu_create();
+		if (pEmulator->hPPU == NULL) {
+			clean_up_emulator_on_fail(&pEmulator, 2, &(pEmulator->hCpu), &cpu_destroy, &(pEmulator->hPPU), &ppu_destroy);
+			goto exit;
+		}
 		
 		
 		
 		// CONNECT COMPONETS AFERT EVERYTHING HAS BEEN ALLOCATED
 		cpu_connect_memory(pEmulator->hCpu, pEmulator->hMemory);
+		ppu_connect_memory(pEmulator->hPPU, pEmulator->hMemory);
 	}
 
 	exit:
@@ -62,7 +82,10 @@ STATUS emulator_rom_set_up(char* rom_name, uint8_t** pRom){
 }
 void emulator_run(EMULATOR hEmulator) {
 	Emulator* pEmulator = (Emulator*)hEmulator;
-	cpu_execute(pEmulator->hCpu);
+	int t_cycles_took = 0;
+
+	cpu_execute(pEmulator->hCpu, &t_cycles_took);
+	ppu_execute(pEmulator->hPPU, t_cycles_took);
 }
 
 void clean_up_emulator_on_fail(Emulator** pEmulator, int argc,  ...) {
@@ -79,17 +102,16 @@ void clean_up_emulator_on_fail(Emulator** pEmulator, int argc,  ...) {
 	va_end(args);
 }
 
+uint32_t* emulator_get_frame_buffer(EMULATOR hEmulator) {
+	Emulator* pEmulator = (Emulator*)hEmulator;
+	ppu_fetch_all_tiles(pEmulator->hPPU, pEmulator->frame_buffer, SCREEN_WIDTH * SCREEN_HEIGHT);
+
+	return pEmulator->frame_buffer;
+}
+
 void emulator_destroy(EMULATOR* phEmulator) {
 	Emulator* pEmulator = (Emulator*)(*phEmulator);
 	cpu_destroy(pEmulator->hCpu);
 	SDL_free(pEmulator);
 	*phEmulator = NULL;
-}
-
-void emulator_check_if_test_passed(EMULATOR hEmulator) {
-	Emulator* pEmulator = (Emulator*)hEmulator;
-	for (int i = 0; i < 16; i++) {
-		char c = memory_read(pEmulator->hMemory, 0xA000 + i);
-		SDL_Log("%c", c);
-	}
 }
